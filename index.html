@@ -1,0 +1,472 @@
+<!--Ejercicio para la practica final de Programación Web
+para la realización del ejercicio se ha utilizado una plantilla de estilos css sb-admin-2.css
+Adicionalmente se ha intentado minimizar el uso de librerias que faciliten el empleo de datapickers, validación de campos
+con al intención de ceñirse en la medida de lo posible a la libreria jquery-->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>My Restaurant Admin</title>
+
+  <!--CSS-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./css/sb-admin-2.css">
+  <link rel="stylesheet" href="./css/styles.css">
+
+  <!--JAVASCRIPT-->
+  <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+</head>
+
+<body id="page-top">
+
+  <!-- App -->
+  <div id="app">
+
+    <!--Contenido-->
+    <div id="content">
+
+      <!--Header-->
+      <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+        <a class="navbar-brand" href="#">Logotipo</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+        </div>
+      </nav>
+      <!--Fin Header-->
+
+      <!--Contenedor central-->
+      <div class="container-lg">
+
+        <!--Encabezado-->
+        <h1 class="h3 mb-2 text-gray-800">Reservas - Práctica JQuery Pablo Pérez Sineiro</h1>
+        <p class="mb-4">A continuación se presenta una lista de reservas.</p>
+        <!--Fin encabezado-->
+
+        <!--Card-->
+        <div class="card shadow mb-4">
+
+          <!--Titulo-->
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Detalles</h6>
+          </div>
+          <!--Fin de titulo-->
+
+          <!--Card body-->
+          <div class="card-body">
+
+            <div class="mx-2">
+              <div class="row p-4 d-flex flex-row justify-content-around align-items-end">
+                <div>
+                  <label for="filtroBuscador" class="text-uppercase font-weight-bold">Filtrar</label>
+                  <input v-model="valorCampoBusqueda" class="form-control" id="filtroBuscador" type="text"
+                    placeholder="Buscar..">
+                </div>
+                <div class=" text-left">
+                  <label for="filtroRangoFechaInicio" class="text-uppercase font-weight-bold">Desde</label>
+                  <input v-model="filtroFechaDesde" class="form-control" id="filtroRangoFechaInicio" type="date">
+                </div>
+                <div class=" text-left">
+                  <label for="filtroRangoFechaFin" class="text-uppercase font-weight-bold">Hasta</label>
+                  <input v-model="filtroFechaHasta" class="form-control" id="filtroRangoFechaFin" type="date">
+                </div>
+                <div class="text-left">
+                  <label for="filtroRangoFechaFin" class="text-uppercase font-weight-bold">Resumen</label><br>
+                  Reservas Totales: {{listaReservas.length}}<br>Reservas 24h: {{listaReservas24horas.length}}
+                </div>
+                <div class=" text-right">
+                  <button @click="verModalCrear=true, erroresValidacion=[]" id="" class="btn btn-primary" type="button"><i
+                      class="fa fa-calendar-plus-o pr-2"></i>Nueva Reserva</button>
+                </div>
+              </div>
+            </div>
+
+            <!--Alerta-->
+            <!-- <div class="mx-2">
+              <div class="row">
+                <div class="col-md-12">
+                  <div v-if="mensajeAlerta" class="alert alert-success">
+                    <button class="close"><span>&times;</span></button>
+                    {{ mesajeAlerta }}
+                  </div>
+                </div>
+              </div>
+            </div> -->
+            <!--Fin de alerta-->
+
+            <!--Pestañas-->
+            <div class="classic-tabs mx-2">
+
+              <ul class="nav nav-tabs " id="tablaReservas" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link  waves-light active show" id="tituloReservas" data-toggle="tab"
+                    href="#pestanaReservas" role="tab" aria-controls="pestanaReservas" aria-selected="true">Reservas</a>
+                </li>
+                <li class="nav-item">
+                  <a v-if="listaReservas24horas.length > 0" class="nav-link waves-light" id="tituloReservas24Horas"
+                    data-toggle="tab" href="#pestanaReservas24Horas" role="tab" aria-controls="pestanaReservas24Horas"
+                    aria-selected="false">Hay {{listaReservas24horas.length}} reservas en las próximas 24 horas</a>
+                  <a v-else="listaReservas24horas.length > 0" class="nav-link waves-light disabled"
+                    id="tituloReservas24Horas" data-toggle="tab" href="#pestanaReservas24Horas" role="tab"
+                    aria-controls="pestanaReservas24Horas" aria-selected="false">No Existen
+                    reservas</a>
+
+                </li>
+              </ul>
+
+              <!--Contenedor pestaña-->
+              <div class="tab-content">
+
+                <!--Tabla reservas totales-->
+                <div class="tab-pane fade active show" id="pestanaReservas">
+
+                  <!--Tabla Reservas-->
+                  <div class="table">
+                    <div class="row py-4">
+                      <div class="col-sm-12">
+                        <table class="table table-bordered table-striped table-sm" id="tablaReservas" width="100%"
+                          cellspacing="0">
+                          <thead>
+                            <tr>
+                              <th v-for="columna in columnas" class="th-sm"><a href="#"
+                                  v-on:click="ordenar(columna.codigo)">{{columna.nombre}}</a></th>
+                              <th class="th-sm"> Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody id="datosReservas">
+                            <tr v-for="reserva in listarReservasFiltradasOrdenadas">
+                              <td>{{reserva.nombre}}<br>Tel: {{reserva.apellidos}}</td>
+                              <td>{{reserva.apellidos}}</td>
+                              <td>{{reserva.fecha |formatoFecha}}<br>{{reserva.hora |formatoHora}}</td>
+                              <td>{{reserva.comensales}}</td>
+                              <td>
+                                <button @click="verModalEliminar=true; seleccionarReservaActual(reserva);"
+                                  class='btn btn-danger mx-2' type='button' data-toggle='modal'><i
+                                    class='fa fa-trash'></i></button>
+                                <button @click="verModalEditar=true; seleccionarReservaActual(reserva);"
+                                  class='btn btn-primary mx-2' type='button' data-toggle='modal'
+                                  data-target='#modalReserva'><i class='fa fa-pencil-square'></i></button>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  <!--Fin tabla Reservas-->
+
+                </div>
+                <!--Tabla reservas totales-->
+
+                <!--Tabla reservas próximas 24 horas-->
+                <div class="tab-pane fade" id="pestanaReservas24Horas" role="tabpanel"
+                  aria-labelledby="follow-tab-classic-shadow">
+                  <div class="table">
+                    <div class="row py-4">
+                      <div class="col-sm-12">
+                        <table class="table table-bordered table-striped table-sm" id="tablaReservas24horas"
+                          width="100%" cellspacing="0">
+                          <thead>
+                            <tr>
+                              <th v-for="columna in columnas" class="th-sm"><a href="#"
+                                  v-on:click="ordenar(columna.codigo)">{{columna.nombre}}</a>
+                              </th>
+                              <th class="th-sm"> Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody id="datosReservas24horas">
+                            <tr v-for="reserva in listarReservas24horasFiltradasOrdenadas">
+                              <td>{{reserva.nombre}}<br>Tel: {{reserva.apellidos}}</td>
+                              <td>{{reserva.apellidos}}</td>
+                              <td>{{reserva.fecha}}</td>
+                              <td>{{reserva.comensales}}</td>
+                              <td>
+                                <button @click="verModalEliminar=true; seleccionarReservaActual(reserva);"
+                                  class='btn btn-danger mx-2' type='button' data-toggle='modal'><i
+                                    class='fa fa-trash'></i></button>
+                                <button @click="verModalEditar=true; seleccionarReservaActual(reserva);"
+                                  class='btn btn-primary mx-2' type='button' data-toggle='modal'
+                                  data-target='#modalReserva'><i class='fa fa-pencil-square'></i></button>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  <!--Fin tabla Reservas 24 horas -->
+
+                </div>
+                <!--Fin tabla reservas próximas 24 horas-->
+
+              </div>
+              <!--Fin contenedor pestaña-->
+
+            </div>
+            <!--Fin pestañas-->
+
+          </div>
+          <!--Fin card body-->
+
+        </div>
+        <!--Fin card-->
+      </div>
+      <!--Fin formulario reservas-->
+
+    </div>
+    <!--Fin Contenedor centrals-->
+
+
+    <!---------------------------------------------------------------------------------------------------------------------------->
+    <!--Modal crear nueva reserva-->
+    <!---------------------------------------------------------------------------------------------------------------------------->
+    <div v-if="verModalCrear" class="overlay modal modal-active" role="dialog">
+      <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Nueva Reserva</h5>
+            <button @click="verModalCrear=false; consultarReservas();" type="button" class="close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+            <form @submit.prevent="validarFormulario" id="formularioGuardar" method="post" action="">
+              <!--Errores validación formulario-->
+             <div v-if="erroresValidacion.length > 0" class="mx-2 px-20">
+              <div class="row">
+                <div class="col-md-12">
+                  <div v-for="error in erroresValidacion" class="alert alert-danger">
+                    <button class="close"><span>&times;</span></button>
+                    {{ error }}
+                  </div>
+                </div>
+              </div>
+            </div>
+              <!--Fin errores validación formulario-->
+            <div class="modal-body p-4">
+              <input type="hidden" name="idReserva" id="idReserva">
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="nombre">Nombre:</label>
+                  <input v-model="nuevaReserva.nombre" class="form-control form-control-lg mb-2" type="text"
+                    name="nombre" id="nombreEditar" placeholder="Introduce nombre cliente" autofocus>
+                </div>
+                <div class="col-md-6">
+                  <label for="apellidos">Apellidos:</label>
+                  <input v-model="nuevaReserva.apellidos" class="form-control form-control-lg mb-2" type="text"
+                    name="apellidos" id="apellidosEditar" placeholder="Introduce los apellidos del cliente">
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-md-4">
+                  <label for="telefono">Teléfono: ej:+(34)000000000</label>
+                  <input v-model="nuevaReserva.telefono" class="form-control form-control-lg mb-2" type="text"
+                    name="telefono" id="telefonoEditar" placeholder="+34 000 000 000">
+                </div>
+                <div class="col-md-4">
+                  <label for="fecha">Fecha:</label>
+                  <input v-model="nuevaReserva.fecha" class="form-control form-control-lg mb-2" type="date" name="fecha"
+                    id="fechaEditar">
+                </div>
+                <div class="col-md-2">
+                  <label for="hora">Hora:</label>
+                  <input v-model="nuevaReserva.hora" class="form-control form-control-lg mb-2" type="time" name="hora"
+                    id="horaEditar" placeholder="Introduce la hora" value="00:00">
+                </div>
+                <div class="col-md-2">
+                  <label for="comensales">Comensales: (max.10)</label>
+                  <input v-model="nuevaReserva.comensales" class="form-control form-control-lg mb-2" type="number"
+                    name="comensales" id="comensalesEditar" placeholder="1" value="1">
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-md-12">
+                  <label for="comentarios">Comentarios:</label>
+                  <textarea v-model="nuevaReserva.comentarios" class="form-control" id="comentariosEditar" rows="3"
+                    maxlength="300"></textarea>
+                  <div id="contadorCaracteres" class="text-monospace text-muted text-right" style="font-size: 0.9em;">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <input  class="btn btn-primary" type="submit" value="Guardar" class="hidden">
+              <!-- <button @click="verModalCrear=false; validarFormulario()" id="botonGuardarModalReserva"
+                class="btn btn-primary"><i class="fa fa-save pr-2"></i>Guardar</button> -->
+              <button @click="verModalCrear=false; consultarReservas();" id="botonCancelarModalReserva" type="button"
+                class="btn btn-secondary">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--Fin de modal crear nueva reserva-->
+
+
+    <!---------------------------------------------------------------------------------------------------------------------------->
+    <!--Modal editar reserva-->
+    <!---------------------------------------------------------------------------------------------------------------------------->
+    <div v-if="verModalEditar" class="overlay modal modal-active" role="dialog">
+      <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Reserva</h5>
+            <button @click="verModalEditar=false; editarReserva()" type="button" class="close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form id="formularioEditar" method="post" action="">
+            <!--<form @submit.prevent="guardarReserva" id="formulario-guardar" method="post" action="">-->
+            <div class="modal-body p-4">
+              <input type="hidden" name="idReserva" id="idReserva">
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="nombre">Nombre:</label>
+                  <input v-model="reservaActual.nombre" class="form-control form-control-lg mb-2" type="text"
+                    name="nombre" id="nombreEditar" placeholder="Introduce nombre cliente" autofocus>
+                </div>
+                <div class="col-md-6">
+                  <label for="apellidos">Apellidos:</label>
+                  <input v-model="reservaActual.apellidos" class="form-control form-control-lg mb-2" type="text"
+                    name="apellidosEditar" id="apellidos" placeholder="Introduce los apellidos del cliente">
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-md-4">
+                  <label for="telefono">Teléfono:</label>
+                  <input v-model="reservaActual.telefono" class="form-control form-control-lg mb-2" type="text"
+                    name="telefonoEditar" id="telefono" placeholder="+34 000 000 000">
+                </div>
+                <div class="col-md-4">
+                  <label for="fecha">Fecha:</label>
+                  <input v-model="datosReservaActual.fecha" class="form-control form-control-lg mb-2" type="date"
+                    name="fechaEditar" id="fecha">
+                </div>
+                <div class="col-md-2">
+                  <label for="hora">Hora:</label>
+                  <input v-model="datosReservaActual.hora" class="form-control form-control-lg mb-2" type="time"
+                    name="horaEditar" id="hora" placeholder="Introduce la hora" value="00:00">
+                </div>
+                <div class="col-md-2">
+                  <label for="comensales">Comensales: (max.10)</label>
+                  <input v-model="reservaActual.comensales" class="form-control form-control-lg mb-2" type="number"
+                    name="comensalesEditar" id="comensales" placeholder="1" value="1">
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-md-12">
+                  <label for="comentarios">Comentarios:</label>
+                  <textarea v-model="reservaActual.comentarios" class="form-control" id="comentariosEditar" rows="3"
+                    maxlength="300"></textarea>
+                  <div id="contadorCaracteres" class="text-monospace text-muted text-right" style="font-size: 0.9em;">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <!--<input  class="btn btn-primary" type="submit" value="Guardar" class="hidden">-->
+              <button @click="verModalEditar=false; modificarReserva();" class="btn btn-primary"><i
+                  class="fa fa-save pr-2"></i>Guardar</button>
+              <button @click="verModalEditar=false; consultarReservas();" type="button"
+                class="btn btn-secondary">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--Fin de modal editar reserva-->
+
+
+    <!---------------------------------------------------------------------------------------------------------------------------->
+    <!--Modal eliminar reserva-->
+    <!---------------------------------------------------------------------------------------------------------------------------->
+    <div v-if="verModalEliminar" class="overlay modal modal-active" role="dialog">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-danger"> ¿Seguro que quieres eliminar la reserva?</h5>
+            <button @click="verModalEliminar=false;" type="button" class="close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Nombre {{reservaActual.nombre}} {{reservaActual.apellidos}}<br>
+              Fecha: {{reservaActual.fecha}}<br>Comensales: {{reservaActual.comensales}}</p>
+          </div>
+          <div class="modal-footer">
+            <!--<input  class="btn btn-primary" type="submit" value="Guardar" class="hidden">-->
+            <button @click="verModalEliminar=false; eliminarReserva();" class="btn btn-danger"><i
+                class="fa fa-trash pr-2"></i>Eliminar</button>
+            <button @click="verModalEliminar=false; consultarReservas();" type="button"
+              class="btn btn-secondary">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--Fin de modal eliminar reserva-->
+
+  </div>
+  <!--Fin content-->
+
+  <!---------------------------------------------------------------------------------------------------------------------------->
+  <!--Footer-->
+  <!---------------------------------------------------------------------------------------------------------------------------->
+  <footer class="sticky-footer bg-white">
+    <div class="container my-auto">
+      <div class="copyright text-center my-auto">
+        <span>Mi Restaurante &copy; 2020</span>
+      </div>
+    </div>
+  </footer>
+  <!--Fin de Footer-->
+
+
+
+  <!-- Scroll boton subir-->
+  <a class="scroll-to-top rounded" href="#">
+    <i class="fa fa-angle-up"></i>
+  </a>
+  <!-- Fin scroll boton subir-->
+
+  </div>
+  <!--Fin app-->
+
+  <!--JAVASCRIPT-->
+  <script>
+
+    //Retraso carga
+    $(document).ready(function () {
+    });
+
+    //Validación formulario
+    $('#formulario-guardar').submit(function (event) {
+      alert("prevejquery");
+      event.preventDefault();
+      //validarFormulario();
+    });
+
+  </script>
+
+
+  <!--VUE-->
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js"></script>
+
+  <!--CUSTOM SCRITPS-->
+  <script src="./scripts/main.js"></script>
+  <!-- <script src="./scripts/reserva.js"></script> -->
+  <!-- <script src="./scripts/validacion.js"></script>
+  <script src="./scripts/utilidades.js"></script> -->
+
+</body>
+
+</html>

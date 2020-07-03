@@ -1,0 +1,31 @@
+.errorText {
+  color: #dd5144;
+  padding: 0;
+  font-size: 14px;
+  margin: 0;
+}
+
+.errorInput {
+  border: 2px solid #dd5144;
+}
+
+.totalReservas {
+  font-size: 16px;
+}
+
+.totalReservas > span {
+  font-weight: 700;
+}
+
+.modal-active {
+  display: block;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
